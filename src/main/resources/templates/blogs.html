@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Blogs</title>
+</head>
+<style>
+    .div1 { grid-area: title; }
+    .div2 { grid-area: search; }
+    .div3 { grid-area: login; }
+    .div4 { grid-area: filter; }
+    .div5 { grid-area: sort; }
+    .header {
+        display: grid;
+        grid-template-areas:
+            'title title title title title  title search login'
+            'title title title title title  title filter sort';
+        gap: 10px;
+        background-color: #2196F3;
+        padding: 10px;
+    }
+    .header > div {
+        background-color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+        padding: 20px 0;
+    }
+    #header{
+        font-size: 100%;
+    }
+    .blogs {
+        display: grid;
+        grid-template-areas:
+            'blog blog';
+        gap: 10px;
+        background-color: #2196F3;
+        padding: 10px;
+    }
+    .blogs > div {
+        background-color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+        font-size: 10px;
+    }
+    .title { grid-area: title; }
+    .author { grid-area: author; }
+    .date { grid-area: date; }
+    .content { grid-area: content; }
+    .blog {
+        display: grid;
+        grid-template-areas:
+            'title title title'
+            'author author date'
+            'content content content';
+        gap: 5px;
+        background-color: #2196F3;
+    }
+
+    #title{
+        text-align: center;
+        font-size: 200%;
+    }
+    #content{
+        text-align: center;
+        font-size: 150%;
+    }
+    #author{
+        text-align: center;
+        font-size: 200%;
+    }
+    #date{
+        text-align: center;
+        font-size: 200%;
+    }
+    footer{
+        display: grid;
+        grid-template-areas:
+            'footer footer';
+        background-color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+        padding: 10px 0;
+        font-size: 20px;
+    }
+</style>
+<body>
+<header>
+    <div class="header">
+        <div class="div1" id="header">
+            <h1>My Blog Application</h1>
+        </div>
+        <div class="div2">
+            <form id="search-blog" action="#" th:action="@{/}">
+                <label>
+                    <input type="search" th:name="search" th:value="${search}" placeholder="Search..."/>
+                    <input type="hidden" th:if="${startDate}!=2022-01-01" name="startDate" th:value="*{startDate}">
+                    <input type="hidden" th:if="${endDate}!=2050-12-31" name="endDate" th:value="*{endDate}">
+                    <input type="hidden" th:if="${author}!=All" name="author" th:value="*{author}">
+                    <input type="hidden" th:if="${tagNames}!=null" name="tags" th:value="*{tagNames}">
+                    <input type="hidden" name="sortOnPostPublishedAt" th:value="*{sortOnPostPublishedAt}">
+                </label>
+                <button>Search</button>
+            </form>
+        </div>
+        <div class="div4" id="filter">
+            <form id="filter-blog" action="#" th:action="@{/}">
+            <div id="filter-date">
+            <label for="start-date">Start date:</label>
+            <input type="date" id="start-date" name="startDate"
+                   th:value="${startDate}">
+            <label for="end-date">End date:</label>
+            <input type="date" id="end-date" name="endDate"
+                   th:value="${endDate}">
+            </div>
+            <div id="filter-author">
+                <label>
+                    <select th:name="author">
+                        <option value="All">Author</option>>
+                        <option th:each="author : ${authors}" th:text="${author}">Author</option>
+                    </select>
+                </label>
+            </div>
+            <div id="filter-tags">
+                <th:block th:each="tag : ${tags}">
+                    <label>
+                        <input type="checkbox" name="tags" th:value="${tag.tagName}"/>
+                    </label>
+                    <label th:text="${tag.tagName}"></label>
+                </th:block>
+            </div>
+                <input type="hidden" th:if="${search}!=null" name="search" th:value="*{search}">
+                <input type="hidden" name="sortOnPostPublishedAt" th:value="*{sortOnPostPublishedAt}">
+                <button>Filter</button>
+            </form>
+        </div>
+        <div class="div5">
+            <form action="#" th:action="@{/}">
+                <label>
+                    <select name="sortOnPostPublishedAt">
+                        <option value="none" selected disabled hidden>SortByPublishedAt</option>
+                        <option th:value="ASC">ASC</option>
+                        <option th:value="DSC">DSC</option>
+                    </select>
+                </label>
+                <input type="hidden" th:if="${search}!=null" name="search" th:value="*{search}">
+                <input type="hidden" th:if="${startDate}!=2022-01-01" name="startDate" th:value="*{startDate}">
+                <input type="hidden" th:if="${endDate}!=2050-12-31" name="endDate" th:value="*{endDate}">
+                <input type="hidden" th:if="${author}!=All" name="author" th:value="*{author}">
+                <input type="hidden" th:if="${tagNames}!=null" name="tags" th:value="*{tagNames}">
+                <button>Sort</button>
+            </form>
+            <form action="#" th:action="@{/}" style="margin: 20px 0">
+                <button>Reset</button>
+            </form>
+            <div sec:authorize-url="/newpost" style="margin: 20px 0">
+                <a th:href="@{/newpost}"><button>NEW POST</button></a>
+            </div>
+        </div>
+        <div class="div3">
+            <div sec:authorize="!isAuthenticated()">
+                <form action="#" th:action="@{/login}" method="get">
+                <button>Login</button>
+                </form>
+            </div>
+            <div sec:authorize="isAuthenticated()">
+                <form action="#" th:action="@{/logout}" method="post">
+                    <button>LogOut</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+<section>
+    <div class="blogs">
+        <div th:each="blog : ${blogs}" class="blog">
+            <form action="#" th:action="@{/post}">
+                    <input type="hidden" name="postId" th:value="${blog.id}">
+                <div id="title" class="title">
+                    <h3 th:text="${blog.title} ?: '(no content)'">Title</h3>
+                </div>
+                <div id="author" class="author">
+                    <p th:text="${blog.author}">Author</p>
+                </div>
+                <div id="date" class="date">
+                    <p th:text="${blog.postPublishedAt}">Public date</p>
+                </div>
+                <div id="content" class="content">
+                    <p th:text="${blog.content}">Content</p>
+                </div>
+                <button>VIEW</button>
+            </form>
+        </div>
+    </div>
+</section>
+<footer>
+    <form action="#" th:action="@{/{pageNo}{limit}(pageNo=${pageNo},limit=${limit})}">
+        <input type="hidden" name="pageNo" th:value="*{currentPage-1}">
+        <input type="hidden" name="limit" th:value="*{pageSize}">
+        <input type="hidden" th:if="${search}!=null" name="search" th:value="*{search}">
+        <input type="hidden" th:if="${startDate}!=2022-01-01" name="startDate" th:value="*{startDate}">
+        <input type="hidden" th:if="${endDate}!=2050-12-31" name="endDate" th:value="*{endDate}">
+        <input type="hidden" th:if="${author}!=All" name="author" th:value="*{author}">
+        <input type="hidden" th:if="${tagNames}!=null" name="tags" th:value="*{tagNames}">
+        <input type="hidden" name="sortOnPostPublishedAt" th:value="*{sortOnPostPublishedAt}">
+        <button th:if="${currentPage > 1}" type="submit">Previous</button>
+    </form>
+        <form action="#" th:action="@{/{pageNo}{limit}(pageNo=${pageNo},limit=${limit})}">
+            <input type="hidden" name="pageNo" th:value="*{currentPage+1}">
+            <input type="hidden" name="limit" th:value="*{pageSize}">
+            <input type="hidden" th:if="${search}!=null" name="search" th:value="*{search}">
+            <input type="hidden" th:if="${startDate}!=2022-01-01" name="startDate" th:value="*{startDate}">
+            <input type="hidden" th:if="${endDate}!=2050-12-31" name="endDate" th:value="*{endDate}">
+            <input type="hidden" th:if="${author}!=All" name="author" th:value="*{author}">
+            <input type="hidden" th:if="${tagNames}!=null" name="tags" th:value="*{tagNames}">
+            <input type="hidden" name="sortOnPostPublishedAt" th:value="*{sortOnPostPublishedAt}">
+            <button th:if="${currentPage < totalPages}" type="submit">Next</button>
+        </form>
+</footer>
+</body>
+</html>

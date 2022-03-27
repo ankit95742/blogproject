@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>New Post</title>
+</head>
+<style>
+    header {
+        text-align: center;
+        margin: 20px;
+    }
+    #title {
+        text-align: center;
+        margin: 20px;
+    }
+    #tags {
+        text-align: center;
+        margin: 20px;
+    }
+    #blog-content {
+        text-align: center;
+        margin: 20px;
+    }
+    #excerpt {
+        text-align: center;
+        margin: 20px;
+    }
+    #author {
+        text-align: center;
+        margin: 20px;
+    }
+</style>
+<body>
+<header><h1>New/Edit Post</h1></header>
+<form action="#" th:action="@{/editpost}" th:object="${blog}" method="post">
+    <input type="hidden" name="id" th:field="*{id}"/>
+    <section id="title"><label>Title
+        <input type="text" name="title" th:field="*{title}" required/>
+    </label></section>
+    <div th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
+    <section id="author"><label>Author
+        <input type="text" name="author" th:field="*{author}" required/>
+    </label></section>
+    </div>
+    <div th:if="${!#authorization.expression('hasAuthority(''ADMIN'')')}">
+        <input type="hidden" name="author" th:field="*{author}"/>
+    </div>
+    <section id="tags"><label>Tags
+        <input type="text" name="tagNames" th:field="*{tagNames}"/>
+    </label></section>
+    <section id="excerpt"><label>Excerpt
+        <input type="text" name="excerpt" th:field="*{excerpt}" required/>
+    </label></section>
+    <section id="blog-content"><label>Content
+        <textarea rows="6" cols="100" name="content" th:field="*{content}" required>
+            Enter Your Content...
+         </textarea>
+    </label></section>
+    <button>EDIT POST</button>
+    </form>
+</body>
+</html>
